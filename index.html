@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATM Franchise India - Start Your Own ATM Business</title>
+    <meta name="description" content="ATM Franchise India offers profitable ATM business opportunities. Start your own ATM franchise with our proven business model and comprehensive support.">
+    <meta name="keywords" content="ATM franchise, ATM business, white label ATM, ATM franchise India, ATM machine business, ATM franchise opportunity">
+    
+    <!-- Author of the Page -->
+    <meta name="author" content="ATM Franchise India">
+
+    <!-- Favicons -->
+    <link href="/images/favicon_ATM.ico" rel="icon">
+    <link href="/images/apple-favicon_atm.png" rel="apple-touch-icon">
+
+    <!-- Main Style -->
+    <link href="/assets/atm_screen.css" rel="stylesheet">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:200,300,400,500,600|Pacifico" rel="stylesheet"> 
+
+    <!-- Font-awesome style -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Canonical URL - Prevents duplicate content issues -->
+    <link rel="canonical" href="https://www.atmfranchiseindia.com/" />
+    <link rel="next" href="https://www.atmfranchiseindia.com/blog.html" />
+    
+    <!-- Open Graph meta tags -->
+    <meta property="og:title" content="ATM Franchise India - Start Your Own ATM Business">
+    <meta property="og:description" content="ATM Franchise India offers profitable ATM business opportunities. Start your own ATM franchise with our proven business model.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.atmfranchiseindia.com">
+
+    <!-- Schema.org markup for HomePage -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FinancialService",
+      "name": "ATM Franchise India",
+      "description": "Leading ATM franchise provider in India offering profitable business opportunities",
+      "url": "https://www.atmfranchiseindia.com",
+      "telephone": "+91-XXXXXXXXXX",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "Business District",
+        "addressLocality": "Navi Mumbai",
+        "addressRegion": "Maharashtra",
+        "postalCode": "400708",
+        "addressCountry": "IN"
+      },
+      "openingHours": "Mo-Fr 09:00-18:00",
+      "areaServed": "India",
+      "serviceType": "ATM Franchise"
+    }
+    </script>
+
+</head>
+<body>
+    <div class="container">
+        <!-- ATM Screen Container -->
+        <div class="atm-container">
+            <div class="atm-content">
+                <!-- ATM Header -->
+                <div class="atm-header">
+                <div class="atm-logo"><img src="/images/logo_atm.png" alt="Logo_ATM FRANCHISE INDIA" width="70%" height="70%"></div>
+
+        <!-- <div class="atm-logo">ATM<span>Franchise</span>India</div>  -->
+                    <div class="atm-subtitle">India's 1st ISO to offer WLA Franchise</div>
+                </div>
+
+                <!-- ATM Main Content -->
+                <div class="atm-main">
+                    <!-- Left Button Panel -->
+                    <div class="button-panel left">
+                     <button class="atm-button">Home</button></a> 
+                      <button class="atm-button">About</button></a> 
+                        <button class="atm-button">Books</button>
+
+                    </div>
+
+                    <!-- ATM Display Area -->
+                    <div class="atm-display">
+                        <div class="welcome-animation">OUT OF SERVICE</div>
+                        <h2 class="display-title">We have closed</h2>
+                        <p class="display-message">
+                            11 years ago, I pioneered ATM Franchise Business Model. 
+                            Unfortunately, this has turned to a loss making business. 
+                            Thus, I no more recommend any one for ATM Franchise.
+                            This website stands as an archive of our legacy.  
+                            You can read blogs, or books before getting in to ATM Business.
+
+                            <br><br> 
+
+                            <strong style="font-size: 1.2rem; color: var(--secondary);">This domain is for sale</strong>
+                            <br>
+                            If you want to buy, share your offer.
+
+                        </p>
+                        <div class="display-message">
+                            <strong>Estd. 2014</strong>
+                        </div>
+                    </div>
+
+                    <!-- Right Button Panel -->
+                    <div class="button-panel right">
+                        <button class="atm-button">Blog</button>
+                        <button class="atm-button">Notice</button>
+                        <button class="atm-button">Contact</button>
+                    </div>
+                </div>
+
+                <!-- ATM Footer -->
+                <div class="atm-footer">
+                     <p>&copy; 2023 ATM Franchise India. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer 
+    <footer>
+        <div class="copyright">
+            <p>&copy; 2023 ATM Franchise India. All rights reserved.</p>
+        </div>
+    </footer> -->
+
+    <script>
+        // Add interactive functionality to ATM buttons
+        document.querySelectorAll('.atm-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const buttonText = this.textContent;
+                const displayTitle = document.querySelector('.display-title');
+                const displayMessage = document.querySelector('.display-message');
+                const welcomeAnimation = document.querySelector('.welcome-animation');
+                
+                // Remove welcome animation
+                welcomeAnimation.style.display = 'none';
+                
+                // Update display based on button clicked
+                switch(buttonText) {
+
+                case 'Home':
+                    window.open('index.html', '_blank');
+                    break;
+   
+                case 'About':
+                displayTitle.textContent = 'About';
+                   displayMessage.innerHTML = 'Pioneered the first White Label ATM Franchise model of India, in 2014. Founded by an industry veteran with 20+ years experience from leading ATM deployers including Hitachi Payments, AGS Transact, and Diebold Nixdorf. Revolutionized ATM entrepreneurship through innovative franchise solutions. Unfortunately, this has turned to a loss making business. Thus, we had to close in the year 2018.<br><br>' +
+                    '<strong style="font-size: 1.2rem; color: var(--secondary);">This domain is for sale</strong><br><br>' +
+                    'If you want to buy, share your offer.';
+                    break;
+
+                case 'Books':
+                    window.open('/books.html', '_blank');
+                    break;
+
+
+                   case 'Blog':
+                    window.open('/blog.html', '_blank');
+                    break;
+
+                // Form Submissionto atmfranchiseindia
+                case 'Contact':
+                    displayTitle.textContent = 'Contact';
+                    displayMessage.innerHTML = 
+                        '<form id="contactForm" action="https://docs.google.com/forms/d/e/1FAIpQLSfoiqz6G8zlQVWVLI0UtcAbjR2VUaM0ZQ-vrrMc6nXVy9bs-w/formResponse" method="POST" target="hidden_iframe" style="margin-top: 20px;">' +
+                        '<iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>' +
+                        '<input type="text" placeholder="Full Name" name="entry.2005620554" required style="width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">' +
+                        '<input type="email" placeholder="Email ID" name="entry.1045781291" required style="width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">' +
+                        '<input type="text" placeholder="Phone Number" name="entry.1166974658" required style="width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">' +
+                        '<textarea placeholder="Share your offer price." name="entry.839337160" required rows="3" style="width: 100%; padding: 5px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; height: 90px;"></textarea>' +
+                        '<input type="submit" value="Submit" class="form_btn" style="width: 100%; padding: 12px; margin: 10px 0; background: var(--secondary); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem;">' +
+                        '</form>';
+
+                        // Form Submission Handler 
+                        const contactForm = document.getElementById('contactForm');
+                        if (contactForm) {
+                            contactForm.onsubmit = function() {
+                                setTimeout(function() {
+                                    window.location.href = '/thank-you.html';
+                                }, 1000);
+                                return true;
+                            };
+                        }
+                        break;
+
+
+                    case 'Notice':
+                        displayTitle.textContent = 'Notice';
+                        displayMessage.innerHTML = 
+                          '<strong style="font-size: 1.2rem; color: var(--secondary);">We have closed this loss macking business in 2018</strong><br><br>' +
+                            '<div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 8px; margin: 10px 0; text-align: left;">' +
+                            '● We are not affiliated with any ATM operator. <br>' +
+                            '● We do not sell ATM Franchise. <br>' +
+                            '● We are not endorse any third party or person. <br>' +
+                            '● We do not have any office or representative. <br>' +
+                            '● ATMFranchiseIndia.com is the only official website. <br>' +
+                            '● We do not have any other website. <br>' +
+                            '● We do not recommend any one for ATM Franchise. <br>' +
+                            '</div>';
+                    break;
+
+
+
+                    default:
+                        displayTitle.textContent = 'We have closed';
+                        displayMessage.textContent = 'Our journey as an ATM Franchise pioneer has ended. Unfortunately, this has turned to a loss making business. We no more recommend any one for ATM Franchise. This site is now a static showcase of our past work. You can still read blogs, or books before getting in to ATM Business. This domain is for sale. If you want to buy, share your offer.';
+                        welcomeAnimation.style.display = 'block';
+                }
+                
+            });
+        });
+    </script>
+</body>
+</html>
