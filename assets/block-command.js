@@ -1,262 +1,212 @@
 /**
- * block.js
- * Comprehensive protection script that blocks:
- * - Right-click context menu
- * - Copy / Cut / Paste (with conditional allow inside editable fields)
- * - Keyboard shortcuts (F12, devtools combos, save, print, view-source, find, select all, etc.)
- * - Dragstart (image/text dragging)
- * - Selection changes / clearing selection on non-editable areas
- * - CSS user-select to make text selection harder while preserving inputs
- *
- * All form inputs, textareas, and contenteditable elements remain fully usable for typing.
+ * block.js – Protects content while preserving full usability of inputs, textareas, and search fields.
+ * - Allows typing, backspace, delete, arrows, space, enter, tab inside editable elements.
+ * - Allows copy/cut/paste inside inputs / textareas (editable areas).
+ * - Blocks right‑click context menu everywhere.
+ * - Blocks copy/cut/paste on non‑editable areas.
+ * - Blocks F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S, Ctrl+P, Ctrl+F, Ctrl+A (on non‑editable).
+ * - Blocks dragstart (prevents image/text dragging).
+ * - Applies CSS to make text selection harder on non‑editable content.
  */
 
 (function() {
     "use strict";
 
-    // Helper: Check if an element is editable (input, textarea, contenteditable)
+    // Helper: check if an element (or its parent) is an editable field
     function isEditableElement(el) {
         if (!el) return false;
-        const tagName = el.tagName ? el.tagName.toLowerCase() : '';
-        if (tagName === 'input' || tagName === 'textarea') return true;
-        // Check contenteditable attribute (including inherited)
+        // Directly an input or textarea
+        if (el.tagName && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) return true;
+        // Contenteditable attribute (including inherited)
         if (el.isContentEditable === true) return true;
-        // Also check if any parent is contenteditable (common for rich text editors)
         if (el.closest && el.closest('[contenteditable="true"]')) return true;
         return false;
     }
 
-    // Helper: Get currently focused element or event target's editable state
+    // Helper: currently focused element is editable
     function isActiveElementEditable() {
         return isEditableElement(document.activeElement);
     }
 
-    // Helper: Determine if selection range is inside an editable element
+    // Helper: selection range inside an editable element
     function isSelectionInsideEditable() {
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) return false;
-        const range = selection.getRangeAt(0);
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return false;
+        const range = sel.getRangeAt(0);
         const container = range.commonAncestorContainer;
-        // container can be text node, so get parent element
         const element = container.nodeType === Node.TEXT_NODE ? container.parentElement : container;
         return isEditableElement(element);
     }
 
-    // ========== 1. BLOCK RIGHT-CLICK CONTEXT MENU ==========
-    document.addEventListener('contextmenu', function(e) {
+    // ------------------------------------------------------------------
+    // 1. BLOCK RIGHT-CLICK CONTEXT MENU (everywhere)
+    // ------------------------------------------------------------------
+    document.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         return false;
     });
 
-    // ========== 2. BLOCK COPY / CUT / PASTE EVENTS (conditional for editable areas) ==========
-    document.addEventListener('copy', function(e) {
-        if (!isActiveElementEditable() && !isSelectionInsideEditable()) {
-            e.preventDefault();
-            return false;
-        }
-    });
-    document.addEventListener('cut', function(e) {
-        if (!isActiveElementEditable() && !isSelectionInsideEditable()) {
-            e.preventDefault();
-            return false;
-        }
-    });
-    document.addEventListener('paste', function(e) {
-        if (!isActiveElementEditable() && !isSelectionInsideEditable()) {
-            e.preventDefault();
-            return false;
-        }
+    // ------------------------------------------------------------------
+    // 2. BLOCK COPY/CUT/PASTE – only on non‑editable areas
+    // ------------------------------------------------------------------
+    const clipboardEvents = ['copy', 'cut', 'paste'];
+    clipboardEvents.forEach(evType => {
+        document.addEventListener(evType, (e) => {
+            if (!isActiveElementEditable() && !isSelectionInsideEditable()) {
+                e.preventDefault();
+                return false;
+            }
+        });
     });
 
-    // ========== 3. BLOCK DRAGSTART (image / text dragging) ==========
-    document.addEventListener('dragstart', function(e) {
+    // ------------------------------------------------------------------
+    // 3. BLOCK DRAGSTART (image / text dragging)
+    // ------------------------------------------------------------------
+    document.addEventListener('dragstart', (e) => {
         e.preventDefault();
         return false;
     });
 
-    // ========== 4. PREVENT SELECTION ON NON-EDITABLE AREAS (selectstart + selectionchange) ==========
-    document.addEventListener('selectstart', function(e) {
+    // ------------------------------------------------------------------
+    // 4. PREVENT SELECTION START ON NON‑EDITABLE AREAS
+    // ------------------------------------------------------------------
+    document.addEventListener('selectstart', (e) => {
         if (!isEditableElement(e.target)) {
             e.preventDefault();
             return false;
         }
     });
 
-    // Clear selection if it occurs on non-editable areas (defense in depth)
-    document.addEventListener('selectionchange', function() {
-        // If focus is inside an editable field OR selection is inside editable, keep it.
+    // ------------------------------------------------------------------
+    // 5. CLEAR SELECTION ONLY IF IT IS OUTSIDE EDITABLE FIELDS
+    //    (does NOT interfere with input caret or highlighting inside inputs)
+    // ------------------------------------------------------------------
+    document.addEventListener('selectionchange', () => {
         if (isActiveElementEditable() || isSelectionInsideEditable()) {
-            return;
+            return;   // preserve selection inside input / textarea
         }
-        // Otherwise clear selection
+        // Otherwise remove any selection on protected content
         if (window.getSelection) {
             window.getSelection().removeAllRanges();
         }
     });
 
-    // ========== 5. BLOCK KEYBOARD SHORTCUTS ==========
+    // ------------------------------------------------------------------
+    // 6. BLOCK KEYBOARD SHORTCUTS (F12, devtools, save, print, etc.)
+    //    – but allow normal typing inside editable elements.
+    // ------------------------------------------------------------------
     const isMac = /Mac|iPod|iPhone|iPad/.test(navigator.platform);
-    
+
     function isCtrlOrCmd(e) {
         return e.ctrlKey || (isMac && e.metaKey);
     }
 
-    function isShift(e) {
-        return e.shiftKey;
-    }
-
-    function isAlt(e) {
-        return e.altKey;
-    }
-
-    function blockShortcut(e) {
+    document.addEventListener('keydown', (e) => {
         const key = e.key;
         const code = e.keyCode || e.which;
-        
-        // --- F12 (Developer Tools) ---
+        const activeEditable = isActiveElementEditable();
+
+        // ---- F12 ----
         if (code === 123 || key === 'F12') {
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
-        
-        // --- Ctrl+Shift+I (DevTools) / Cmd+Option+I (Mac) ---
-        if ((isCtrlOrCmd(e) && isShift(e) && (key === 'I' || key === 'i')) ||
-            (isMac && e.altKey && e.metaKey && (key === 'I' || key === 'i'))) {
+
+        // ---- DevTools combos: Ctrl+Shift+I / Cmd+Option+I, Ctrl+Shift+J, Ctrl+Shift+C, Ctrl+Shift+K ----
+        if ((isCtrlOrCmd(e) && e.shiftKey && (key === 'I' || key === 'i')) ||
+            (isMac && e.altKey && e.metaKey && (key === 'I' || key === 'i')) ||
+            (isCtrlOrCmd(e) && e.shiftKey && (key === 'J' || key === 'j')) ||
+            (isMac && e.altKey && e.metaKey && (key === 'J' || key === 'j')) ||
+            (isCtrlOrCmd(e) && e.shiftKey && (key === 'C' || key === 'c')) ||
+            (isCtrlOrCmd(e) && e.shiftKey && (key === 'K' || key === 'k'))) {
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
-        
-        // --- Ctrl+Shift+J (Console) / Cmd+Option+J (Mac) ---
-        if ((isCtrlOrCmd(e) && isShift(e) && (key === 'J' || key === 'j')) ||
-            (isMac && e.altKey && e.metaKey && (key === 'J' || key === 'j'))) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        
-        // --- Ctrl+Shift+C (Inspect Element) / Cmd+Shift+C Mac ---
-        if ((isCtrlOrCmd(e) && isShift(e) && (key === 'C' || key === 'c')) ||
-            (isMac && e.metaKey && isShift(e) && (key === 'C' || key === 'c'))) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        
-        // --- Ctrl+Shift+K (Firefox Web Console) ---
-        if (isCtrlOrCmd(e) && isShift(e) && (key === 'K' || key === 'k')) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        
-        // --- Ctrl+U (View Source) ---
+
+        // ---- Ctrl+U (View Source) ----
         if (isCtrlOrCmd(e) && (key === 'U' || key === 'u')) {
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
-        
-        // --- Ctrl+S (Save) ---
+
+        // ---- Ctrl+S (Save) & Ctrl+Shift+S (Save As) ----
         if (isCtrlOrCmd(e) && (key === 'S' || key === 's')) {
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
-        
-        // --- Ctrl+P (Print) ---
+
+        // ---- Ctrl+P (Print) ----
         if (isCtrlOrCmd(e) && (key === 'P' || key === 'p')) {
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
-        
-        // --- Ctrl+Shift+S (Save As / some browsers) ---
-        if (isCtrlOrCmd(e) && isShift(e) && (key === 'S' || key === 's')) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-        
-        // --- Ctrl+F (Find) - block globally to prevent exposing content via browser find ---
+
+        // ---- Ctrl+F (Find) – block globally (can reveal content) ----
         if (isCtrlOrCmd(e) && (key === 'F' || key === 'f')) {
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
-        
-        // --- Ctrl+A (Select All) - block on non-editable areas ---
+
+        // ---- Ctrl+A (Select All) – block only on non‑editable areas ----
         if (isCtrlOrCmd(e) && (key === 'A' || key === 'a')) {
-            if (!isActiveElementEditable() && !isSelectionInsideEditable()) {
+            if (!activeEditable && !isSelectionInsideEditable()) {
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
             }
-            // Allow select-all inside inputs/textareas
+            // allow inside inputs/textareas
             return true;
         }
-        
-        // --- Ctrl+C / Ctrl+X / Ctrl+V (Copy/Cut/Paste) - block on non-editable areas ---
-        // These are already handled by copy/cut/paste events, but also block keydown to be safe
+
+        // ---- Ctrl+C / Ctrl+X / Ctrl+V (Copy/Cut/Paste) – already handled by clipboard events,
+        //      but also block here as a second line of defence on non‑editable areas.
         if (isCtrlOrCmd(e) && (key === 'C' || key === 'c' || key === 'X' || key === 'x' || key === 'V' || key === 'v')) {
-            if (!isActiveElementEditable() && !isSelectionInsideEditable()) {
+            if (!activeEditable && !isSelectionInsideEditable()) {
                 e.preventDefault();
                 e.stopPropagation();
                 return false;
             }
-            // Allow within editable fields
+            // allow copy/paste/cut inside editable fields
             return true;
         }
-        
-        // --- Additional: Block PrintScreen key (cannot fully prevent, but can try to clear clipboard) ---
+
+        // ---- PrintScreen (attempt to clear clipboard) ----
         if (key === 'PrintScreen' || code === 44) {
             e.preventDefault();
             e.stopPropagation();
-            // Attempt to clear clipboard after a tiny delay (not guaranteed but defensive)
             setTimeout(() => {
-                try {
-                    navigator.clipboard.writeText('').catch(() => {});
-                } catch (err) {}
+                try { navigator.clipboard.writeText('').catch(() => {}); } catch (err) {}
             }, 50);
             return false;
         }
-        
-        // --- Block some screen capture related combos (e.g., Windows+Shift+S) ---
-        // Note: Native OS combos can't be fully blocked, but we can block if ctrl/shift combos overlap
-        if (isCtrlOrCmd(e) && isShift(e) && (key === 'S' || key === 's')) {
-            // Already handled above
-            return false;
-        }
-        
-        // Allow normal typing, navigation keys, backspace, delete, enter, tab, arrows, etc.
+
+        // ---- For all other keys (letters, numbers, backspace, delete, arrows, space, enter, tab, etc.)
+        //      do nothing – allow normal typing and navigation.
         return true;
-    }
+    }, true); // capture phase to intercept before other handlers
 
-    // Attach keydown listener with high priority (capture phase)
-    document.addEventListener('keydown', function(e) {
-        if (blockShortcut(e) === false) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    }, true); // capture phase to intercept before any other handlers
-
-    // Also prevent keyup for some safety (though not necessary)
-    document.addEventListener('keyup', function(e) {
-        const key = e.key;
-        const code = e.keyCode || e.which;
-        if (code === 123 || key === 'F12') {
+    // Also prevent keyup for F12 (extra safety)
+    document.addEventListener('keyup', (e) => {
+        if (e.key === 'F12' || e.keyCode === 123) {
             e.preventDefault();
             e.stopPropagation();
             return false;
         }
     });
 
-    // ========== 6. CSS TO MAKE SELECTION HARDER (while preserving inputs) ==========
+    // ------------------------------------------------------------------
+    // 7. CSS – make selection hard on non‑editable content,
+    //    but preserve normal selection inside inputs / textareas.
+    // ------------------------------------------------------------------
     const style = document.createElement('style');
     style.textContent = `
-        /* Prevent text selection on most elements */
+        /* Disable selection on everything except inputs, textareas, contenteditable */
         body, body *:not(input):not(textarea):not([contenteditable="true"]):not([contenteditable="true"] *) {
             -webkit-user-select: none !important;
             -moz-user-select: none !important;
@@ -264,14 +214,14 @@
             user-select: none !important;
             -webkit-tap-highlight-color: transparent;
         }
-        /* Allow selection and normal behavior inside editable fields */
+        /* Allow full selection & caret inside editable fields */
         input, textarea, [contenteditable="true"], [contenteditable="true"] * {
             -webkit-user-select: text !important;
             -moz-user-select: text !important;
             -ms-user-select: text !important;
             user-select: text !important;
         }
-        /* Optional: make non-editable selection background less visible if any leak */
+        /* Optional: make any accidental selection less visible */
         ::selection {
             background: rgba(0,0,0,0.1);
         }
@@ -281,42 +231,12 @@
     `;
     document.head.appendChild(style);
 
-    // ========== 7. ADDITIONAL DEFENSES ==========
-    // Prevent F12 via onkeydown on window (extra layer)
-    window.addEventListener('keydown', function(e) {
-        if (e.key === 'F12' || e.keyCode === 123) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    });
-
-    // Disable right-click on images via drag prevention (already handled)
-    // Also disable default browser behavior for middle-click paste if any (optional)
-    document.addEventListener('auxclick', function(e) {
-        if (e.button === 1) { // middle button
-            e.preventDefault();
-            return false;
-        }
-    });
-
-    // Prevent text selection via mouseup/mousedown combo (defense)
-    document.addEventListener('mousedown', function(e) {
-        // If target is not editable and we are starting selection, try to prevent
-        if (!isEditableElement(e.target)) {
-            // Do not prevent default completely - might break UI interactions.
-            // However, we rely on CSS + selectstart + selectionchange.
-            // This just ensures selection is cleared aggressively.
-            if (e.detail > 1) { // double click prevention
-                e.preventDefault();
-            }
-        }
-    });
-
-    // Final: clear any accidental selection on document load
+    // ------------------------------------------------------------------
+    // 8. Clean any stray selection at startup
+    // ------------------------------------------------------------------
     if (window.getSelection) {
         window.getSelection().removeAllRanges();
     }
 
-    console.log('Block.js active: right-click, copy, shortcuts, devtools blocked. Typing in forms preserved.');
+    console.log('block.js loaded – typing in search/forms allowed, protections active for non‑editable content.');
 })();
